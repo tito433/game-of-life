@@ -114,9 +114,9 @@ function GameOfLife(canvas){
 
 	this._onMouseDown=function(evt){
 		this._mdouwn=true;
-		this._onClick(evt);
 	}
 	this._onMouseUp=function(evt){
+		this._onClick(evt);
 		this._mdouwn=false;
 	}
 	this._onMouseMove=function(evt){
