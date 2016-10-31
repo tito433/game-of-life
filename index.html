@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Data graber from google calendar</title>
+  <style type="text/css">
+    html,body{padding: 0;margin: 0;height: 100%;}
+    div.container {
+      width: 100%; height: 100%;display: table;
+    }
+    div.container>* {
+      display: table-cell;    vertical-align: top;
+    }
+    div#menu {
+      width: 300px;
+      margin: 0;
+      padding: 15px 15px 0 15px;
+      background-color: #28a8e0;
+      color: #fff;
+      max-height: 100%;
+      overflow: auto;
+      height: 100%;
+
+    }
+    div#output{
+      padding: 10px;
+    }
+  </style>
+  <script src="js/game.js"></script>
+</head>
+<body>
+    <div class="container">
+      <div id="menu">
+        
+      </div>
+      <div id="output">
+        <canvas id="canvas">Your browser does not support &lt;canvas&gt;</canvas>
+      </div>
+    </div>
+
+
+    <script type="text/javascript">
+      var canvas=document.getElementById('canvas');
+      var game=new GameOfLife(canvas);
+      game.draw();
+    </script>
+</body>
+</html>
