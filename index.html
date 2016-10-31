@@ -13,7 +13,7 @@
     div#menu {
       width: 300px;
       margin: 0;
-      padding: 15px 15px 0 15px;
+      padding: 20px;
       background-color: #28a8e0;
       color: #fff;
       max-height: 100%;
@@ -30,7 +30,7 @@
 <body>
     <div class="container">
       <div id="menu">
-        
+        <button id="initRandom">Random init</button>
       </div>
       <div id="output">
         <canvas id="canvas">Your browser does not support &lt;canvas&gt;</canvas>
@@ -41,7 +41,13 @@
     <script type="text/javascript">
       var canvas=document.getElementById('canvas');
       var game=new GameOfLife(canvas);
+      
       game.draw();
+
+      document.getElementById('initRandom').addEventListener("mouseup",function(e){
+        game.randomize();
+        game.draw();
+      }, false);
     </script>
 </body>
 </html>
