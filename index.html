@@ -31,6 +31,7 @@
     <div class="container">
       <div id="menu">
         <button id="initRandom">Random init</button>
+        <button id="start">START</button>
       </div>
       <div id="output">
         <canvas id="canvas">Your browser does not support &lt;canvas&gt;</canvas>
@@ -47,6 +48,17 @@
       document.getElementById('initRandom').addEventListener("mouseup",function(e){
         game.randomize();
         game.draw();
+      }, false);
+
+      document.getElementById('start').addEventListener("mouseup",function(e){
+        if (this.innerHTML=="START"){
+          game.start();
+          this.innerHTML = "STOP";
+        }else{
+          this.innerHTML = "START";
+          game.stop();
+        } 
+        
       }, false);
     </script>
 </body>
