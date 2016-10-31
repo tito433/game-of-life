@@ -10,13 +10,17 @@ function GameOfLife(canvas){
     this.height=canvas.height;
 	this._ctx=canvas.getContext("2d");
 	this.speed=100;
+	this._mdouwn=false;
 
 	this.draw=function(){
 		this._ctx.clearRect(0,0,this.width,this.height);
 		for (var y = 0,ny=this.cells.length; y < ny; y++) {
 			for(var x=0,nx=this.cells[y].length;x<nx;x++){
 				var dx=x*size,dy=y*size;
-				this._ctx.beginPath();;
+				this._ctx.beginPath();
+				this._ctx.strokeStyle='#808080';
+				this._ctx.fillStyle='#000000';
+				this._ctx.lineWidth=0.3;
 				this._ctx.rect(dx,dy,size,size);
 				if(this.cells[y][x]===true){
 					this._ctx.fill();
@@ -72,17 +76,17 @@ function GameOfLife(canvas){
 	this.randomize=function(){
 		this.cells=this._createCells();
 
-		var initLife=20,
-			my=this.cells.length,
-			mx=this.cells[0].length;
+		var my=this.cells.length,
+			mx=this.cells[0].length,
+			pr=Math.floor(Math.random()*10),
+			initLife=Math.floor((mx*my)*(pr/100));
 
 		while(initLife--){
 			var x=Math.floor(Math.random()*mx),
 				y=Math.floor(Math.random()*my);
-			if(this.cells[x] !=undefined)
-				this.cells[x][y]=true;	
+			if(this.cells[y] !=undefined)
+				this.cells[y][x]=true;	
 		}
-
 	}
 
 	this.start=function(){
@@ -101,12 +105,28 @@ function GameOfLife(canvas){
         	xt=Math.floor(x/size),
         	yt=Math.floor(y/size);
         if(this.cells[xt]){
-        	var v=this.cells[yt][xt]||false;
-        	this.cells[yt][xt]=!v;
+        	this.cells[yt][xt]=!this.cells[yt][xt];
         }
         this.draw();
 	}
 
 	this.cells=this._createCells();
-	canvas.addEventListener("mouseup", this._onClick.bind(this), false);
+
+	this._onMouseDown=function(evt){
+		this._mdouwn=true;
+		this._onClick(evt);
+	}
+	this._onMouseUp=function(evt){
+		this._mdouwn=false;
+	}
+	this._onMouseMove=function(evt){
+		if(this._mdouwn){
+			this._onClick(evt);
+		}
+	}
+
+
+	canvas.addEventListener("mousedown", this._onMouseDown.bind(this), false);
+	canvas.addEventListener("mouseup", this._onMouseUp.bind(this), false);
+	canvas.addEventListener("mousemove", this._onMouseMove.bind(this), false);
 }
