@@ -4,13 +4,14 @@ function GameOfLife(canvas){
 	canvas.width=parent.clientWidth;
     canvas.height=parent.clientHeight;
 
-    var size=10;
+    
     this.bounds=canvas.getBoundingClientRect();
     this.width=canvas.width;
     this.height=canvas.height;
 	this._ctx=canvas.getContext("2d");
 	this.speed=100;
 	this._mdouwn=false;
+	var size=10;
 
 	this.draw=function(){
 		this._ctx.clearRect(0,0,this.width,this.height);
@@ -113,17 +114,25 @@ function GameOfLife(canvas){
 	this.cells=this._createCells();
 
 	this._onMouseDown=function(evt){
-		this._mdouwn=true;
-	}
-	this._onMouseUp=function(evt){
-		this._onClick(evt);
-		this._mdouwn=false;
+		var x=evt.clientX - this.bounds.left,
+            y=evt.clientY - this.bounds.top;
+		this._mdouwn={x:x,y:y};
 	}
 	this._onMouseMove=function(evt){
 		if(this._mdouwn){
-			this._onClick(evt);
+			var x=evt.clientX - this.bounds.left,
+            	y=evt.clientY - this.bounds.top;
+
+            if(Math.abs(this._mdouwn.x-x)>size || Math.abs(this._mdouwn.y-y)>size)
+				this._onClick(evt);
+
 		}
 	}
+	this._onMouseUp=function(evt){
+		this._mdouwn=false;
+		this._onClick(evt);
+	}
+	
 
 
 	canvas.addEventListener("mousedown", this._onMouseDown.bind(this), false);
