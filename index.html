@@ -31,6 +31,7 @@
     <div class="container">
       <div id="menu">
         <button id="initRandom">Random init</button>
+        <button id="step">Step</button>
         <button id="start">START</button>
       </div>
       <div id="output">
@@ -50,7 +51,10 @@
         game.draw();
       }, false);
 
-      document.getElementById('start').addEventListener("mouseup",function(e){
+      
+
+      var btnStart=document.getElementById('start');
+      btnStart.addEventListener("mouseup",function(e){
         if (this.innerHTML=="START"){
           game.start();
           this.innerHTML = "STOP";
@@ -60,6 +64,15 @@
         } 
         
       }, false);
+
+      document.getElementById('step').addEventListener("mouseup",function(e){
+        if (btnStart.innerHTML=="STOP"){
+          game.stop();
+          btnStart.innerHTML = "START";
+        } 
+        game.step();
+      }, false);
+
     </script>
 </body>
 </html>
