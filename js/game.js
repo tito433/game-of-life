@@ -109,7 +109,7 @@ function GameOfLife(canvas){
 			var cells=[];
 			this._visitCells(function(cell,x,y){
 				if(cell){
-					cells.push({x:x,y:y});
+					cells.push([x,y]);
 				}
 			});
 
@@ -120,9 +120,11 @@ function GameOfLife(canvas){
 				mx=this.cells[0].length;
 
 			for(var i in arguments[0]){
-				var item=arguments[0][i];
-				if(item.y<my && item.x<mx)
-					this.cells[item.y][item.x]=true;
+				var item=arguments[0][i],
+					x=item[0],y=item[1];
+
+				if(y<my && x<mx)
+					this.cells[y][x]=true;
 			}
 			
 		}

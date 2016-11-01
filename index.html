@@ -92,14 +92,14 @@
       game.draw();
 
       var domElem=['initRandom','start','step','dInput','dOutput','info'].reduce(function(ret,curr){
-                if(typeof ret==='string'){
-                  var bret=ret;
-                  ret={};
-                  ret[bret]=document.getElementById(bret);
-                }
-                  ret[curr]=document.getElementById(curr);
-                  return ret;
-              });
+          if(typeof ret==='string'){
+            var bret=ret;
+            ret={};
+            ret[bret]=document.getElementById(bret);
+          }
+            ret[curr]=document.getElementById(curr);
+            return ret;
+      });
 
       domElem.initRandom.addEventListener("mouseup",function(e){
         domElem.info.innerHTML='';
@@ -117,8 +117,8 @@
               game.draw();
               return true;
             }
-         }catch(e){}
-        domElem.info.innerHTML='Invlid data. Expected json array of [{"x":33,"y":4}]'; 
+         }catch(e){console.log(e)}
+        domElem.info.innerHTML='Invlid data. Expected json array of [[33,4],[4,33]]'; 
         return false;
       }, true);
       domElem.dOutput.addEventListener("mouseup",function(e){
