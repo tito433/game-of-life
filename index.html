@@ -3,9 +3,14 @@
 <head>
   <title>Data graber from google calendar</title>
   <style type="text/css">
-    html,body{padding: 0;margin: 0;height: 100%;}
+    html,body{padding: 0;margin: 0;height: 100%;color:#444;}
     div.container {
       width: 100%; height: 100%;display: table;
+    }
+    h1{
+      text-align: center;
+      border-bottom: 1px solid #444;
+    padding-bottom: 3.33px;
     }
     div.container>* {
       display: table-cell;    vertical-align: top;
@@ -13,9 +18,8 @@
     div#menu {
       width: 300px;
       margin: 0;
-      padding: 20px;
-      background-color: #28a8e0;
-      color: #fff;
+      padding: 0 20px 20px;
+      background-color: #f0f0f0;
       max-height: 100%;
       overflow: auto;
       height: 100%;
@@ -30,16 +34,50 @@
       margin-bottom: 10px;
       padding-top: 5px;
       padding-bottom: 5px;
-  }
+    }
+    fieldset+fieldset{
+          margin-top: 10px;
+    }
+    textarea{
+      width: 100%;
+      min-height: 300px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    fieldset buttongroup{
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+    }
+    fieldset buttongroup button{
+      display: table-cell;
+      width: 33.33%;
+    }
   </style>
   <script src="js/game.js"></script>
 </head>
 <body>
     <div class="container">
       <div id="menu">
-        <button id="initRandom">Random init</button>
-        <button id="step">Step</button>
-        <button id="start">START</button>
+        <h1>The game of life</h1>
+        <fieldset>
+          <legend>Data</legend>
+          <textarea id="rawData"></textarea>
+          <buttongroup>
+            <button id="initRandom">Rand</button>
+            <button id="dInput">Import</button>
+            <button id="dOutput">Export</button>
+          </buttongroup>
+        </fieldset>
+        <fieldset>
+          <legend>Controll:</legend>
+          <button id="start">START</button>
+          <button id="step">Step</button>
+        </fieldset>
+        <fieldset>
+          <legend>Info:</legend>
+          <p id="info"></p>
+        </fieldset>
       </div>
       <div id="output">
         <canvas id="canvas">Your browser does not support &lt;canvas&gt;</canvas>
@@ -53,32 +91,54 @@
       
       game.draw();
 
-      document.getElementById('initRandom').addEventListener("mouseup",function(e){
+      var btns=['initRandom','start','step','dInput','dOutput'].reduce(function(ret,curr){
+                if(typeof ret==='string'){
+                  var bret=ret;
+                  ret={};
+                  ret[bret]=document.getElementById(bret);
+                }
+                  ret[curr]=document.getElementById(curr);
+                  return ret;
+              });
+
+      btns.initRandom.addEventListener("mouseup",function(e){
         game.randomize();
         game.draw();
-      }, false);
+        document.getElementById('rawData').value =JSON.stringify(game.data());
+      }, true);
 
-      
+      btns.dInput.addEventListener("mouseup",function(e){
+        alert('Not yet implemented.');
+      }, true);
+      btns.dOutput.addEventListener("mouseup",function(e){
+        document.getElementById('rawData').value =JSON.stringify(game.data());
+      }, true);
 
-      var btnStart=document.getElementById('start');
-      btnStart.addEventListener("mouseup",function(e){
+
+      btns.start.addEventListener("mouseup",function(e){
         if (this.innerHTML=="START"){
-          game.start();
-          this.innerHTML = "STOP";
+          
+          var data=game.data();
+          if(data.length>0){
+            this.innerHTML = "STOP";
+            game.start();
+          }else{
+            document.getElementById('info').innerHTML='Please add some live cell. You can add some by clicking,dragging and importing.';
+          }
+          
         }else{
           this.innerHTML = "START";
           game.stop();
         } 
-        
-      }, false);
+      }, true);
 
-      document.getElementById('step').addEventListener("mouseup",function(e){
+      btns.step.addEventListener("mouseup",function(e){
         if (btnStart.innerHTML=="STOP"){
           game.stop();
           btnStart.innerHTML = "START";
         } 
         game.step();
-      }, false);
+      }, true);
 
     </script>
 </body>

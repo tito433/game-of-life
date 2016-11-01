@@ -11,27 +11,25 @@ function GameOfLife(canvas){
 	this._ctx=canvas.getContext("2d");
 	this.speed=100;
 	this._mdouwn=false;
-	var size=10;
+	this.size=10;
 
 	this.draw=function(){
 		this._ctx.clearRect(0,0,this.width,this.height);
-		for (var y = 0,ny=this.cells.length; y < ny; y++) {
-			for(var x=0,nx=this.cells[y].length;x<nx;x++){
-				var dx=x*size,dy=y*size;
+		this._visitCells(function(cell,x,y){
+			var dx=x*this.size,dy=y*this.size;
 				this._ctx.beginPath();
 				this._ctx.strokeStyle='#808080';
 				this._ctx.fillStyle='#000000';
 				this._ctx.lineWidth=0.3;
-				this._ctx.rect(dx,dy,size,size);
-				if(this.cells[y][x]===true){
+				this._ctx.rect(dx,dy,this.size,this.size);
+				if(cell===true){
 					this._ctx.fill();
 				}else{
 					this._ctx.stroke();
 				}
-				
-			}
-		}
+		}.bind(this));
 	}
+
 	this.run=function(){
 		var cells=this._createCells();
 
@@ -39,9 +37,7 @@ function GameOfLife(canvas){
                {x:-1, y:0},               {x:1, y:0},
                {x:-1, y:1},  {x:0, y:1},  {x:1, y:1}];
 
-		for (var y = 0,ny=this.cells.length; y < ny; y++) {
-			for(var x=0,nx=this.cells[y].length;x<nx;x++){
-				
+		this._visitCells(function(cell,x,y,nx,ny){
 				var neighbours=[];
 				for(var di in deltas){
 					var delta=deltas[di];
@@ -54,23 +50,29 @@ function GameOfLife(canvas){
 				}
 				
 				var nl=neighbours.reduce((a,b)=>a+b,0);
-				var life=this.cells[y][x]||false;
+				var life=cell||false;
 				
 				if(life && nl<2) life=false;
 				else if(life && nl>3) life=false;
 				else if(!life && nl==3) life=true;
 
 				cells[y][x]=life;
-			}
-		}
+		}.bind(this));
+
 		this.cells=cells;
 		this.draw();
 	}
-
+	this._visitCells=function(callback){
+		for (var y = 0,ny=this.cells.length; y < ny; y++) {
+			for(var x=0,nx=this.cells[y].length;x<nx;x++){
+				callback(this.cells[y][x],x,y,nx,ny);
+			}
+		}
+	}
 	this._createCells=function(){
-		var cells=new Array(Math.floor(this.height/size));
+		var cells=new Array(Math.floor(this.height/this.size));
 		for (var i = 0; i < cells.length; i++) {
-		  cells[i] = new Array(Math.floor(this.width/size));
+		  cells[i] = new Array(Math.floor(this.width/this.size));
 		}
 		return cells;
 	}
@@ -99,7 +101,20 @@ function GameOfLife(canvas){
 	this.stop=function(){
 		clearInterval(this._timer);
 	}
+	this.data=function(){
+		if(arguments.length==0){
+			var cells=[];
+			this._visitCells(function(cell,x,y){
+				if(cell){
+					cells.push({x:x,y:y});
+				}
+			});
 
+			return cells;
+		}else{
+			this.cells=arguments[0];
+		}
+	}
 	this._onClick=function(evt){
 		var x=evt.clientX - this.bounds.left,
             y=evt.clientY - this.bounds.top,
