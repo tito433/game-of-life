@@ -2,7 +2,7 @@
 A JavaScript implementation of Conway's Game of Life
 
 #### Sample data
-[##### Gosper glider gun](http://www.conwaylife.com/w/index.php?title=Gosper_glider_gun)
+##### [Gosper glider gun](http://www.conwaylife.com/w/index.php?title=Gosper_glider_gun)
 ```
 [[25,1],[23,2],[25,2],[13,3],[14,3],[21,3],[22,3],[35,3],[36,3],[12,4],
  [16,4],[21,4],[22,4],[35,4],[36,4],[1,5],[2,5],[11,5],[17,5],[21,5],[22,5],
