@@ -69,10 +69,13 @@ function GameOfLife(canvas){
 			}
 		}
 	}
-	this._createCells=function(){
-		var cells=new Array(Math.floor(this.height/this.size));
+	this._createCells=function(xc,yc){
+		xc=xc||Math.floor(this.width/this.size);
+		yc=yc||Math.floor(this.height/this.size);
+
+		var cells=new Array(yc);
 		for (var i = 0; i < cells.length; i++) {
-		  cells[i] = new Array(Math.floor(this.width/this.size));
+		  cells[i] = new Array(Math.floor(xc));
 		}
 		return cells;
 	}
@@ -112,14 +115,25 @@ function GameOfLife(canvas){
 
 			return cells;
 		}else{
-			this.cells=arguments[0];
+			var size=arguments[0].reduce(function(cum,cur){
+				if(cur.x>cum.x) cum.x=cur.x;
+				if(cur.y>cum.y) cum.y=cur.y;
+				return cum;
+			});
+			this.cells=this._createCells(size.x+1,size.y+1);
+
+			for(var i in arguments[0]){
+				var item=arguments[0][i];
+				this.cells[item.y][item.x]=true;
+			}
+			
 		}
 	}
 	this._onClick=function(evt){
 		var x=evt.clientX - this.bounds.left,
             y=evt.clientY - this.bounds.top,
-        	xt=Math.floor(x/size),
-        	yt=Math.floor(y/size);
+        	xt=Math.floor(x/this.size),
+        	yt=Math.floor(y/this.size);
         if(this.cells[xt]){
         	this.cells[yt][xt]=!this.cells[yt][xt];
         }
@@ -138,7 +152,7 @@ function GameOfLife(canvas){
 			var x=evt.clientX - this.bounds.left,
             	y=evt.clientY - this.bounds.top;
 
-            if(Math.abs(this._mdouwn.x-x)>size || Math.abs(this._mdouwn.y-y)>size)
+            if(Math.abs(this._mdouwn.x-x)>this.size || Math.abs(this._mdouwn.y-y)>this.size)
 				this._onClick(evt);
 
 		}

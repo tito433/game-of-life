@@ -18,7 +18,7 @@
     div#menu {
       width: 300px;
       margin: 0;
-      padding: 0 20px 20px;
+      padding: 0 10px;
       background-color: #f0f0f0;
       max-height: 100%;
       overflow: auto;
@@ -40,9 +40,9 @@
     }
     textarea{
       width: 100%;
-      min-height: 300px;
+      min-height: 200px;
       font-size: 12px;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
     }
     fieldset buttongroup{
       display: table;
@@ -91,7 +91,7 @@
       
       game.draw();
 
-      var btns=['initRandom','start','step','dInput','dOutput'].reduce(function(ret,curr){
+      var domElem=['initRandom','start','step','dInput','dOutput','info'].reduce(function(ret,curr){
                 if(typeof ret==='string'){
                   var bret=ret;
                   ret={};
@@ -101,21 +101,34 @@
                   return ret;
               });
 
-      btns.initRandom.addEventListener("mouseup",function(e){
+      domElem.initRandom.addEventListener("mouseup",function(e){
+        domElem.info.innerHTML='';
         game.randomize();
         game.draw();
         document.getElementById('rawData').value =JSON.stringify(game.data());
       }, true);
 
-      btns.dInput.addEventListener("mouseup",function(e){
-        alert('Not yet implemented.');
+      domElem.dInput.addEventListener("mouseup",function(e){
+        var jsonString=document.getElementById('rawData').value;
+        try{
+           var data=JSON.parse(jsonString);
+           if( data && data.length){
+              game.data(data);
+              game.draw();
+              return true;
+            }
+         }catch(e){}
+        domElem.info.innerHTML='Invlid data. Expected json array of [{"x":33,"y":4}]'; 
+        return false;
       }, true);
-      btns.dOutput.addEventListener("mouseup",function(e){
+      domElem.dOutput.addEventListener("mouseup",function(e){
+        domElem.info.innerHTML='';
         document.getElementById('rawData').value =JSON.stringify(game.data());
       }, true);
 
 
-      btns.start.addEventListener("mouseup",function(e){
+      domElem.start.addEventListener("mouseup",function(e){
+        domElem.info.innerHTML='';
         if (this.innerHTML=="START"){
           
           var data=game.data();
@@ -132,7 +145,8 @@
         } 
       }, true);
 
-      btns.step.addEventListener("mouseup",function(e){
+      domElem.step.addEventListener("mouseup",function(e){
+        domElem.info.innerHTML='';
         if (btnStart.innerHTML=="STOP"){
           game.stop();
           btnStart.innerHTML = "START";
