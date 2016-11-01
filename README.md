@@ -1,4 +1,4 @@
-# game-of-life
+# Conway's Game of Life
 A JavaScript implementation of Conway's Game of Life
 
 #### Sample data
