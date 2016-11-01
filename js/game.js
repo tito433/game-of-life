@@ -115,16 +115,14 @@ function GameOfLife(canvas){
 
 			return cells;
 		}else{
-			var size=arguments[0].reduce(function(cum,cur){
-				if(cur.x>cum.x) cum.x=cur.x;
-				if(cur.y>cum.y) cum.y=cur.y;
-				return cum;
-			});
-			this.cells=this._createCells(size.x+1,size.y+1);
+			this.cells=this._createCells();
+			var my=this.cells.length,
+				mx=this.cells[0].length;
 
 			for(var i in arguments[0]){
 				var item=arguments[0][i];
-				this.cells[item.y][item.x]=true;
+				if(item.y<my && item.x<mx)
+					this.cells[item.y][item.x]=true;
 			}
 			
 		}
