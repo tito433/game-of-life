@@ -1,5 +1,5 @@
 # Conway's Game of Life
-A JavaScript implementation of Conway's Game of Life
+A JavaScript implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)
 
 #### Sample data
 ##### [Gosper glider gun](http://www.conwaylife.com/w/index.php?title=Gosper_glider_gun)
