@@ -61,8 +61,8 @@
       <div id="menu">
         <h1>The game of life</h1>
         <fieldset>
-          <legend>Data</legend>
-          <textarea id="rawData"></textarea>
+          <legend>Data (RLE)</legend>
+          <textarea id="rawData">24bo$22bobo$12b2o6b2o12b2o$11bo3bo4b2o12b2o$2o8bo5bo3b2o$2o8bo3bob2o4bobo$10bo5bo7bo$11bo3bo$12b2o!</textarea>
           <buttongroup>
             <button id="initRandom">Rand</button>
             <button id="dInput">Import</button>
@@ -109,17 +109,13 @@
       }, true);
 
       domElem.dInput.addEventListener("mouseup",function(e){
-        var jsonString=document.getElementById('rawData').value;
-        try{
-           var data=JSON.parse(jsonString);
-           if( data && data.length){
-              game.data(data);
-              game.draw();
-              return true;
-            }
-         }catch(e){console.log(e)}
-        domElem.info.innerHTML='Invlid data. Expected json array of [[33,4],[4,33]]'; 
-        return false;
+        var str=document.getElementById('rawData').value;
+        //try{
+           game.data(str);
+           game.draw();
+        // }catch(e){
+        //  domElem.info.innerHTML=e+'<br/>Please use <a href="http://www.conwaylife.com/wiki/RLE">RLE</a> format.';
+        // }
       }, true);
       domElem.dOutput.addEventListener("mouseup",function(e){
         domElem.info.innerHTML='';

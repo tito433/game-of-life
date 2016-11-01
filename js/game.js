@@ -1,3 +1,5 @@
+"use strict";
+
 function GameOfLife(canvas){
 	var parent=canvas.parentNode;
 	
@@ -115,17 +117,39 @@ function GameOfLife(canvas){
 
 			return cells;
 		}else{
+			var data=arguments[0];
 			this.cells=this._createCells();
-			var my=this.cells.length,
-				mx=this.cells[0].length;
+			var my=this.cells.length, mx=this.cells[0].length,
+				lines=data.split('\n'),
+				rle=lines[lines.length-1],
+				d="",i=0,y=0,x=0;
 
-			for(var i in arguments[0]){
-				var item=arguments[0][i],
-					x=item[0],y=item[1];
+			while(i<rle.length){
+				var ch=rle[i++];
+				if(ch==='!'){
+					break;
+				}else if(ch==='$'){
+					y++;x=0;
+				}else if(ch==='b'||ch==='o'){
+					var dx=parseInt(d)||1;
+					var t=ch==='o';
+					while(dx>0 && x+dx<mx){
+						this.cells[y][x]=t;
+						dx--;x++;
+					}
+					d="";//clean
+				}else{
+					d+=ch;
+				}
 
-				if(y<my && x<mx)
-					this.cells[y][x]=true;
 			}
+			// for(var i in arguments[0]){
+			// 	var item=arguments[0][i],
+			// 		x=item[0],y=item[1];
+
+			// 	if(y<my && x<mx)
+			// 		this.cells[y][x]=true;
+			// }
 			
 		}
 	}
