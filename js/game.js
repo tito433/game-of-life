@@ -14,6 +14,7 @@ function GameOfLife(canvas){
 	this.speed=100;
 	this._mdouwn=false;
 	this.size=10;
+	this._settings={grid:true};
 
 	this.draw=function(){
 		this._ctx.clearRect(0,0,this.width,this.height);
@@ -27,20 +28,23 @@ function GameOfLife(canvas){
 				if(cell===true){
 					this._ctx.fill();
 				}else{
-					this._ctx.stroke();
+					if(this._settings.grid)
+						this._ctx.stroke();
 				}
+
 		}.bind(this));
 	}
 
 	this.run=function(){
-		var cells=this._createCells();
+		var ny=this.cells.length,nx=this.cells[0].length,
+			cells=this._createCells(nx,ny),
+			deltas =[{x:-1, y:-1}, {x:0, y:-1}, {x:1, y:-1},
+               		{x:-1, y:0},{x:1, y:0},
+               		{x:-1, y:1},  {x:0, y:1},  {x:1, y:1}];
 
-		var deltas =[{x:-1, y:-1}, {x:0, y:-1}, {x:1, y:-1},
-               {x:-1, y:0},               {x:1, y:0},
-               {x:-1, y:1},  {x:0, y:1},  {x:1, y:1}];
-
-		this._visitCells(function(cell,x,y,nx,ny){
-				var neighbours=[];
+        for(var y=0;y<ny;y++){
+        	for(var x=0;x<nx;x++){
+        		var neighbours=[];
 				for(var di in deltas){
 					var delta=deltas[di];
 				    if (x+delta.x >= 0 && x + delta.x < nx &&
@@ -52,14 +56,14 @@ function GameOfLife(canvas){
 				}
 				
 				var nl=neighbours.reduce((a,b)=>a+b,0);
-				var life=cell||false;
+				var life=this.cells[y][x]||false;
 				
 				if(life && nl<2) life=false;
 				else if(life && nl>3) life=false;
 				else if(!life && nl==3) life=true;
-
 				cells[y][x]=life;
-		}.bind(this));
+        	}
+        }
 
 		this.cells=cells;
 		this.draw();
@@ -72,12 +76,17 @@ function GameOfLife(canvas){
 		}
 	}
 	this._createCells=function(xc,yc){
+		
 		xc=xc||Math.floor(this.width/this.size);
 		yc=yc||Math.floor(this.height/this.size);
 
+		this.size=this.width/xc;
+
 		var cells=new Array(yc);
-		for (var i = 0; i < cells.length; i++) {
-		  cells[i] = new Array(Math.floor(xc));
+		for(var y=0;y<yc;y++){
+			var arr=new Array(Math.floor(xc));
+			arr=arr.fill(false);
+		  cells[y]=arr;
 		}
 		return cells;
 	}
@@ -86,7 +95,7 @@ function GameOfLife(canvas){
 
 		var my=this.cells.length,
 			mx=this.cells[0].length,
-			pr=Math.floor(Math.random()*10),
+			pr=Math.floor(Math.random()*90),
 			initLife=Math.floor((mx*my)*(pr/100));
 
 		while(initLife--){
@@ -106,23 +115,60 @@ function GameOfLife(canvas){
 	this.stop=function(){
 		clearInterval(this._timer);
 	}
+	this.reset=function(){
+		this.stop();
+		this.cells=this._createCells();
+		this.draw();
+		this.size=10;
+	}
 	this.data=function(){
 		if(arguments.length==0){
-			var cells=[];
-			this._visitCells(function(cell,x,y){
-				if(cell){
-					cells.push([x,y]);
-				}
-			});
+			var prev=-1,run=0,
+				my=this.cells.length,
+				mx=this.cells[0].length,
+				result='x = '+mx+', y = '+my+', rule = B3/S23'+"\n",
+				typ='';
 
-			return cells;
+			for(var y=0;y<my;y++){
+				run=0;
+				for(var x=0;x<mx;x++){
+					typ=this.cells[y][x]?'o':'b';
+					if(x>0 && prev!==typ){
+						if(run<2){
+							result+=prev;
+						}else{
+							result+=run+prev;
+							run=0;
+						}
+						
+					}else{
+						run++;
+					}
+					prev=typ;
+				}
+				if(run>0){
+					result+=run+typ;
+				}
+				result+='$';
+			}
+			
+			return result+'!';
 		}else{
 			var data=arguments[0];
-			this.cells=this._createCells();
-			var my=this.cells.length, mx=this.cells[0].length,
+			
+			var my=Math.floor(this.width/this.size), mx=Math.floor(this.height/this.size),
 				lines=data.split('\n'),
 				rle=lines[lines.length-1],
-				d="",i=0,y=0,x=0;
+				d="",i=0,y=0,x=0,
+				setR=/x\s*=\s*(\d+),\s*y\s*=\s*(\d+)/;
+
+			//check dimension
+			lines.forEach(function(line){
+				var match=setR.exec(line);
+				if(match){ mx=match[1];	my=match[2];}
+			})
+			this.cells=this._createCells(mx,my);
+			
 
 			while(i<rle.length){
 				var ch=rle[i++];
@@ -134,23 +180,16 @@ function GameOfLife(canvas){
 					var dx=parseInt(d)||1;
 					var t=ch==='o';
 					while(dx>0 && x+dx<mx){
+						if(this.cells[y][x]!==undefined)
 						this.cells[y][x]=t;
 						dx--;x++;
 					}
-					d="";//clean
+					d="";
 				}else{
 					d+=ch;
 				}
 
 			}
-			// for(var i in arguments[0]){
-			// 	var item=arguments[0][i],
-			// 		x=item[0],y=item[1];
-
-			// 	if(y<my && x<mx)
-			// 		this.cells[y][x]=true;
-			// }
-			
 		}
 	}
 	this._onClick=function(evt){
@@ -186,7 +225,14 @@ function GameOfLife(canvas){
 		this._onClick(evt);
 	}
 	
-
+	this.settings=function(name,val){
+		if(val===undefined){
+			return this._settings[name];
+		}else{
+			this._settings[name]=val;
+			this.draw();
+		}
+	}
 
 	canvas.addEventListener("mousedown", this._onMouseDown.bind(this), false);
 	canvas.addEventListener("mouseup", this._onMouseUp.bind(this), false);

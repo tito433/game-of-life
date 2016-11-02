@@ -1,59 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Data graber from google calendar</title>
-  <style type="text/css">
-    html,body{padding: 0;margin: 0;height: 100%;color:#444;}
-    div.container {
-      width: 100%; height: 100%;display: table;
-    }
-    h1{
-      text-align: center;
-      border-bottom: 1px solid #444;
-    padding-bottom: 3.33px;
-    }
-    div.container>* {
-      display: table-cell;    vertical-align: top;
-    }
-    div#menu {
-      width: 300px;
-      margin: 0;
-      padding: 0 10px;
-      background-color: #f0f0f0;
-      max-height: 100%;
-      overflow: auto;
-      height: 100%;
-
-    }
-    div#output{
-      padding: 10px;
-    }
-    button {
-      display: block;
-      width: 100%;
-      margin-bottom: 10px;
-      padding-top: 5px;
-      padding-bottom: 5px;
-    }
-    fieldset+fieldset{
-          margin-top: 10px;
-    }
-    textarea{
-      width: 100%;
-      min-height: 200px;
-      font-size: 12px;
-      margin-bottom: 5px;
-    }
-    fieldset buttongroup{
-      display: table;
-      width: 100%;
-      table-layout: fixed;
-    }
-    fieldset buttongroup button{
-      display: table-cell;
-      width: 33.33%;
-    }
-  </style>
+  <title>Conway's Game of Life</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
   <script src="js/game.js"></script>
 </head>
 <body>
@@ -61,7 +10,7 @@
       <div id="menu">
         <h1>The game of life</h1>
         <fieldset>
-          <legend>Data (RLE)</legend>
+          <legend>Data (<a target="_blank" href="http://www.conwaylife.com/wiki/RLE">RLE</a>):</legend>
           <textarea id="rawData"></textarea>
           <buttongroup>
             <button id="initRandom">Rand</button>
@@ -70,9 +19,20 @@
           </buttongroup>
         </fieldset>
         <fieldset>
+          <legend>Settings:</legend>
+          <ul class="list" id="settings">
+            <li>
+              <p>Grid</p>
+              <input id="grid" type="checkbox" value="grid" checked="checked" class="tgl"/>
+              <label for="grid"></label>
+            </li>
+          </ul>
+        </fieldset>
+        <fieldset>
           <legend>Controll:</legend>
           <button id="start">START</button>
           <button id="step">Step</button>
+          <button id="reset">RESET</button>
         </fieldset>
         <fieldset>
           <legend>Info:</legend>
@@ -91,10 +51,9 @@
       
       game.draw();
 
-      var domElem=['initRandom','start','step','dInput','dOutput','info'].reduce(function(ret,curr){
+      var domElem=['rawData','initRandom','start','step','dInput','dOutput','info','reset'].reduce(function(ret,curr){
           if(typeof ret==='string'){
-            var bret=ret;
-            ret={};
+            var bret=ret;ret={};
             ret[bret]=document.getElementById(bret);
           }
             ret[curr]=document.getElementById(curr);
@@ -105,36 +64,28 @@
         domElem.info.innerHTML='';
         game.randomize();
         game.draw();
-        document.getElementById('rawData').value =JSON.stringify(game.data());
+        domElem.rawData.value =game.data();
       }, true);
 
       domElem.dInput.addEventListener("mouseup",function(e){
-        var str=document.getElementById('rawData').value;
-        //try{
-           game.data(str);
-           game.draw();
-        // }catch(e){
-        //  domElem.info.innerHTML=e+'<br/>Please use <a href="http://www.conwaylife.com/wiki/RLE">RLE</a> format.';
-        // }
+       game.data(domElem.rawData.value);
+       game.draw();
       }, true);
       domElem.dOutput.addEventListener("mouseup",function(e){
         domElem.info.innerHTML='';
-        document.getElementById('rawData').value =JSON.stringify(game.data());
+        domElem.rawData.value =game.data();
       }, true);
 
 
       domElem.start.addEventListener("mouseup",function(e){
         domElem.info.innerHTML='';
         if (this.innerHTML=="START"){
-          
-          var data=game.data();
-          if(data.length>0){
+          if(game.data().length>0){
             this.innerHTML = "STOP";
             game.start();
           }else{
             document.getElementById('info').innerHTML='Please add some live cell. You can add some by clicking,dragging and importing.';
           }
-          
         }else{
           this.innerHTML = "START";
           game.stop();
@@ -143,13 +94,27 @@
 
       domElem.step.addEventListener("mouseup",function(e){
         domElem.info.innerHTML='';
-        if (btnStart.innerHTML=="STOP"){
+        if (domElem.start.innerHTML=="STOP"){
           game.stop();
-          btnStart.innerHTML = "START";
+          domElem.start.innerHTML = "START";
         } 
         game.step();
       }, true);
 
+      domElem.reset.addEventListener("mouseup",function(e){
+        domElem.info.innerHTML='';
+        domElem.rawData.value ='';
+        if (domElem.start.innerHTML=="STOP"){
+          domElem.start.innerHTML = "START";
+        } 
+        game.reset();
+
+      }, true);
+      document.querySelectorAll('#settings input[type=checkbox]').forEach(function(item){
+        item.onclick=function(e){
+          game.settings(this.value,this.checked);
+        };
+      })
     </script>
 </body>
 </html>
