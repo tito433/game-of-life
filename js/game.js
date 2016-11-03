@@ -11,77 +11,88 @@ function GameOfLife(canvas){
     this.width=canvas.width;
     this.height=canvas.height;
 	this._ctx=canvas.getContext("2d");
-	this.speed=100;
+	this.cells=[];
+	this._isRunning=false;
 	this._mdouwn=false;
 	this.size=10;
-	this._settings={grid:true};
+	this._settings={lifeSpan:100,grid:true,frameRate:1000/60};
 
 	this.draw=function(){
 		this._ctx.clearRect(0,0,this.width,this.height);
-		this._visitCells(function(cell,x,y){
-			var dx=x*this.size,dy=y*this.size;
+		this._ctx.save();
+		this._ctx.strokeStyle='#808080';
+		this._ctx.fillStyle='#000000';
+		this._ctx.lineWidth=0.3;
+		if(this._settings.grid){
+			var pos=0;
+			while(pos<this.width){
 				this._ctx.beginPath();
-				this._ctx.strokeStyle='#808080';
-				this._ctx.fillStyle='#000000';
-				this._ctx.lineWidth=0.3;
-				this._ctx.rect(dx,dy,this.size,this.size);
-				if(cell===true){
-					this._ctx.fill();
-				}else{
-					if(this._settings.grid)
-						this._ctx.stroke();
+				this._ctx.moveTo(pos,0);
+				this._ctx.lineTo(pos,this.height);
+				this._ctx.stroke();
+				pos+=this.size;
+			}
+			pos=0;
+			while(pos<this.height){
+				this._ctx.beginPath();
+				this._ctx.moveTo(0,pos);
+				this._ctx.lineTo(this.width,pos);
+				this._ctx.stroke();
+				pos+=this.size;
+			}
+		}
+		//draw cells
+		for (var y in this.cells) {
+			var row=this.cells[y];
+			for(var x in row){
+				var cell=row[x];
+				if(cell){
+					var dx=x*this.size,dy=y*this.size;
+					this._ctx.beginPath();
+					this._ctx.fillRect(dx,dy,this.size,this.size);
 				}
-
-		}.bind(this));
+			}
+		}
+		this._ctx.restore();
 	}
 
 	this.run=function(){
-		var ny=this.cells.length,nx=this.cells[0].length,
-			cells=this._createCells(nx,ny),
-			deltas =[{x:-1, y:-1}, {x:0, y:-1}, {x:1, y:-1},
-               		{x:-1, y:0},{x:1, y:0},
-               		{x:-1, y:1},  {x:0, y:1},  {x:1, y:1}];
+		var ny=this.cells.length,nx=this.cells.reduce((a,b)=>a.length>b.length?a:b).length,
+			cells=[],
+			deltas =[[-1,-1],[0,-1], [1,-1],
+               		 [-1,0],[1,0],
+               		 [-1,1],  [0,1],  [1,1]];
 
-        for(var y=0;y<ny;y++){
-        	for(var x=0;x<nx;x++){
-        		var neighbours=[];
+        for(var y in this.cells){
+        	var row=this.cells[y];
+        	for(var x in row){
+        		var life=row[x],nl=0;
+
 				for(var di in deltas){
-					var delta=deltas[di];
-				    if (x+delta.x >= 0 && x + delta.x < nx &&
-				        y+delta.y >= 0 && y + delta.y < ny){
-				    	var val=this.cells[y + delta.y][x + delta.x];
-				    	val=val==undefined || val==false?0:1;
-					    neighbours.push(val);
+					var delta=deltas[di],dy=parseInt(y) + delta[1],dx=parseInt(x) + delta[0];
+				    if (dx >= 0 && dx < nx && dy >= 0 && dy < ny){
+				    	nl+=this.cells[dy] && this.cells[dy][dx]?1:0;
 					}
 				}
-				
-				var nl=neighbours.reduce((a,b)=>a+b,0);
-				var life=this.cells[y][x]||false;
-				
+
 				if(life && nl<2) life=false;
 				else if(life && nl>3) life=false;
 				else if(!life && nl==3) life=true;
+				if(cells[y]===undefined) cells[y]=[];
 				cells[y][x]=life;
         	}
         }
 
 		this.cells=cells;
-		this.draw();
-	}
-	this._visitCells=function(callback){
-		for (var y = 0,ny=this.cells.length; y < ny; y++) {
-			for(var x=0,nx=this.cells[y].length;x<nx;x++){
-				callback(this.cells[y][x],x,y,nx,ny);
-			}
-		}
 	}
 	this._createCells=function(xc,yc){
-		
+
+		if(xc!==undefined) this.size=this.width/xc;
+
 		xc=xc||Math.floor(this.width/this.size);
 		yc=yc||Math.floor(this.height/this.size);
 
-		this.size=this.width/xc;
-
+		
 		var cells=new Array(yc);
 		for(var y=0;y<yc;y++){
 			var arr=new Array(Math.floor(xc));
@@ -107,22 +118,24 @@ function GameOfLife(canvas){
 	}
 
 	this.start=function(){
-		this._timer=setInterval(this.run.bind(this),this.speed);
+		this._timer=setInterval(this.run.bind(this),this._settings.lifeSpan);
+		this._isRunning=true;
 	}
 	this.step=function(){
 		this.run();
 	}
 	this.stop=function(){
 		clearInterval(this._timer);
+		this._isRunning=false;
 	}
 	this.reset=function(){
 		this.stop();
 		this.cells=this._createCells();
-		this.draw();
 		this.size=10;
 	}
 	this.data=function(){
 		if(arguments.length==0){
+			if(this.cells.length<1) return [];
 			var prev=-1,run=0,
 				my=this.cells.length,
 				mx=this.cells[0].length,
@@ -156,17 +169,26 @@ function GameOfLife(canvas){
 		}else{
 			var data=arguments[0];
 			
-			var my=Math.floor(this.width/this.size), mx=Math.floor(this.height/this.size),
+			var mx=Math.floor(this.width/this.size), 
+				my=Math.floor(this.height/this.size),
 				lines=data.split('\n'),
-				rle=lines[lines.length-1],
+				rle=false,
 				d="",i=0,y=0,x=0,
-				setR=/x\s*=\s*(\d+),\s*y\s*=\s*(\d+)/;
+				rs=/x\s*=\s*(\d+),\s*y\s*=\s*(\d+)/,
+				rl=/[\$\dbo]+\!/;
 
-			//check dimension
+			//check data
 			lines.forEach(function(line){
-				var match=setR.exec(line);
-				if(match){ mx=match[1];	my=match[2];}
-			})
+				var match=rs.exec(line);
+				if(match){ 
+					mx=Math.max(mx,match[1]);
+					my=Math.max(my,match[2]);
+				}
+				if(match=rl.exec(line)){rle=line;}
+			});
+			
+			if(!rle) throw "Invalid RLE data! check RLE is in single line.";
+
 			this.cells=this._createCells(mx,my);
 			
 
@@ -200,10 +222,8 @@ function GameOfLife(canvas){
         if(this.cells[xt]){
         	this.cells[yt][xt]=!this.cells[yt][xt];
         }
-        this.draw();
 	}
 
-	this.cells=this._createCells();
 
 	this._onMouseDown=function(evt){
 		var x=evt.clientX - this.bounds.left,
@@ -230,9 +250,13 @@ function GameOfLife(canvas){
 			return this._settings[name];
 		}else{
 			this._settings[name]=val;
-			this.draw();
+			if(name=='lifeSpan' && this._isRunning){
+				this.stop();
+				this.start();
+			}
 		}
 	}
+	setInterval(this.draw.bind(this),this._settings.frameRate);
 
 	canvas.addEventListener("mousedown", this._onMouseDown.bind(this), false);
 	canvas.addEventListener("mouseup", this._onMouseUp.bind(this), false);

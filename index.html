@@ -10,7 +10,7 @@
       <div id="menu">
         <h1>The game of life</h1>
         <fieldset>
-          <legend>Data (<a target="_blank" href="http://www.conwaylife.com/wiki/RLE">RLE</a>):</legend>
+          <legend><a target="_blank" href="http://www.conwaylife.com/wiki/RLE">RLE</a> data:</legend>
           <textarea id="rawData"></textarea>
           <buttongroup>
             <button id="initRandom">Rand</button>
@@ -23,8 +23,15 @@
           <ul class="list" id="settings">
             <li>
               <p>Grid</p>
-              <input id="grid" type="checkbox" value="grid" checked="checked" class="tgl"/>
+              <input id="grid" type="checkbox" name="grid" checked="checked" class="tgl"/>
               <label for="grid"></label>
+            </li>
+            <li>
+              <p>Life span</p>
+              <div class="input-group">
+                <input type="number" name="lifeSpan" class="form-control" value="100" />
+                <span class="input-group-addon">ms</span>
+              </div>
             </li>
           </ul>
         </fieldset>
@@ -48,8 +55,6 @@
     <script type="text/javascript">
       var canvas=document.getElementById('canvas');
       var game=new GameOfLife(canvas);
-      
-      game.draw();
 
       var domElem=['rawData','initRandom','start','step','dInput','dOutput','info','reset'].reduce(function(ret,curr){
           if(typeof ret==='string'){
@@ -63,13 +68,17 @@
       domElem.initRandom.addEventListener("mouseup",function(e){
         domElem.info.innerHTML='';
         game.randomize();
-        game.draw();
         domElem.rawData.value =game.data();
       }, true);
 
       domElem.dInput.addEventListener("mouseup",function(e){
-       game.data(domElem.rawData.value);
-       game.draw();
+        domElem.info.innerHTML='';
+        try{
+          game.data(domElem.rawData.value);
+        }catch(e){
+          domElem.info.innerHTML=e;
+        }
+       
       }, true);
       domElem.dOutput.addEventListener("mouseup",function(e){
         domElem.info.innerHTML='';
@@ -84,7 +93,7 @@
             this.innerHTML = "STOP";
             game.start();
           }else{
-            document.getElementById('info').innerHTML='Please add some live cell. You can add some by clicking,dragging and importing.';
+            domElem.info.innerHTML='Please add some live cell. You can add some by clicking,dragging and importing.';
           }
         }else{
           this.innerHTML = "START";
@@ -98,7 +107,11 @@
           game.stop();
           domElem.start.innerHTML = "START";
         } 
-        game.step();
+        if(game.data().length>0){
+          game.step();
+        }else{
+          domElem.info.innerHTML='Please add some live cell. You can add some by clicking,dragging and importing.';
+        }
       }, true);
 
       domElem.reset.addEventListener("mouseup",function(e){
@@ -110,11 +123,16 @@
         game.reset();
 
       }, true);
-      document.querySelectorAll('#settings input[type=checkbox]').forEach(function(item){
-        item.onclick=function(e){
-          game.settings(this.value,this.checked);
+      document.querySelectorAll('#settings input').forEach(function(item){
+        item.onchange=function(e){
+          var name=this.name,val=this.value;
+          if(this.type=='checkbox'){
+            val=this.checked;
+          }
+          game.settings(name,val);
         };
-      })
+      });
+
     </script>
 </body>
 </html>
