@@ -27,6 +27,13 @@
               <label for="grid"></label>
             </li>
             <li>
+              <p>Grid size</p>
+              <div class="input-group">
+                <input type="number" name="gridSize" class="form-control" value="36" />
+                <span class="input-group-addon">px</span>
+              </div>
+            </li>
+            <li>
               <p>Life span</p>
               <div class="input-group">
                 <input type="number" name="lifeSpan" class="form-control" value="100" />
@@ -54,7 +61,7 @@
 
     <script type="text/javascript">
       var canvas=document.getElementById('canvas');
-      var game=new GameOfLife(canvas);
+      var game={};
 
       var domElem=['rawData','initRandom','start','step','dInput','dOutput','info','reset'].reduce(function(ret,curr){
           if(typeof ret==='string'){
@@ -123,16 +130,29 @@
         game.reset();
 
       }, true);
+
+      var settings_vars={};
+
       document.querySelectorAll('#settings input').forEach(function(item){
+        var name=item.name;
+
+        if(item.type=='checkbox'){
+          settings_vars[name]=item.checked;
+        }else if(item.type=='number'){
+          settings_vars[name]=parseInt(item.value);
+        }
+
         item.onchange=function(e){
           var name=this.name,val=this.value;
           if(this.type=='checkbox'){
             val=this.checked;
+          }else if(this.type=='number'){
+            val=parseInt(val);
           }
           game.settings(name,val);
         };
       });
-
+      game=new GameOfLife(canvas,settings_vars);
     </script>
 </body>
 </html>

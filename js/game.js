@@ -1,12 +1,12 @@
 "use strict";
 
-function GameOfLife(canvas){
+function GameOfLife(canvas,sett){
 	var parent=canvas.parentNode;
 	
 	canvas.width=parent.clientWidth;
     canvas.height=parent.clientHeight;
 
-    
+    var options={lifeSpan:100,grid:true,frameRate:1000/60,gridSize:36};
     this.bounds=canvas.getBoundingClientRect();
     this.width=canvas.width;
     this.height=canvas.height;
@@ -14,8 +14,7 @@ function GameOfLife(canvas){
 	this.cells=[];
 	this._isRunning=false;
 	this._mdouwn=false;
-	this.size=10;
-	this._settings={lifeSpan:100,grid:true,frameRate:1000/60};
+	this._settings=options.extendEx(sett||{});
 
 	this.draw=function(){
 		this._ctx.clearRect(0,0,this.width,this.height);
@@ -30,7 +29,7 @@ function GameOfLife(canvas){
 				this._ctx.moveTo(pos,0);
 				this._ctx.lineTo(pos,this.height);
 				this._ctx.stroke();
-				pos+=this.size;
+				pos+=this._settings.gridSize;
 			}
 			pos=0;
 			while(pos<this.height){
@@ -38,8 +37,9 @@ function GameOfLife(canvas){
 				this._ctx.moveTo(0,pos);
 				this._ctx.lineTo(this.width,pos);
 				this._ctx.stroke();
-				pos+=this.size;
+				pos+=this._settings.gridSize;
 			}
+
 		}
 		//draw cells
 		for (var y in this.cells) {
@@ -47,9 +47,9 @@ function GameOfLife(canvas){
 			for(var x in row){
 				var cell=row[x];
 				if(cell){
-					var dx=x*this.size,dy=y*this.size;
+					var dx=x*this._settings.gridSize,dy=y*this._settings.gridSize;
 					this._ctx.beginPath();
-					this._ctx.fillRect(dx,dy,this.size,this.size);
+					this._ctx.fillRect(dx,dy,this._settings.gridSize,this._settings.gridSize);
 				}
 			}
 		}
@@ -87,10 +87,10 @@ function GameOfLife(canvas){
 	}
 	this._createCells=function(xc,yc){
 
-		if(xc!==undefined) this.size=this.width/xc;
+		if(xc!==undefined) this._settings.gridSize=this.width/xc;
 
-		xc=xc||Math.floor(this.width/this.size);
-		yc=yc||Math.floor(this.height/this.size);
+		xc=xc||Math.floor(this.width/this._settings.gridSize);
+		yc=yc||Math.floor(this.height/this._settings.gridSize);
 
 		
 		var cells=new Array(yc);
@@ -131,7 +131,7 @@ function GameOfLife(canvas){
 	this.reset=function(){
 		this.stop();
 		this.cells=this._createCells();
-		this.size=10;
+		this._settings=options.extendEx(sett||{});
 	}
 	this.data=function(){
 		if(arguments.length==0){
@@ -169,8 +169,8 @@ function GameOfLife(canvas){
 		}else{
 			var data=arguments[0];
 			
-			var mx=Math.floor(this.width/this.size), 
-				my=Math.floor(this.height/this.size),
+			var mx=Math.floor(this.width/this._settings.gridSize), 
+				my=Math.floor(this.height/this._settings.gridSize),
 				lines=data.split('\n'),
 				rle=false,
 				d="",i=0,y=0,x=0,
@@ -217,8 +217,8 @@ function GameOfLife(canvas){
 	this._onClick=function(evt){
 		var x=evt.clientX - this.bounds.left,
             y=evt.clientY - this.bounds.top,
-        	xt=Math.floor(x/this.size),
-        	yt=Math.floor(y/this.size);
+        	xt=Math.floor(x/this._settings.gridSize),
+        	yt=Math.floor(y/this._settings.gridSize);
         if(this.cells[xt]){
         	this.cells[yt][xt]=!this.cells[yt][xt];
         }
@@ -235,7 +235,7 @@ function GameOfLife(canvas){
 			var x=evt.clientX - this.bounds.left,
             	y=evt.clientY - this.bounds.top;
 
-            if(Math.abs(this._mdouwn.x-x)>this.size || Math.abs(this._mdouwn.y-y)>this.size)
+            if(Math.abs(this._mdouwn.x-x)>this._settings.gridSize || Math.abs(this._mdouwn.y-y)>this._settings.gridSize)
 				this._onClick(evt);
 
 		}
@@ -261,4 +261,13 @@ function GameOfLife(canvas){
 	canvas.addEventListener("mousedown", this._onMouseDown.bind(this), false);
 	canvas.addEventListener("mouseup", this._onMouseUp.bind(this), false);
 	canvas.addEventListener("mousemove", this._onMouseMove.bind(this), false);
+}
+
+Object.prototype.extendEx=function(){
+  var dst=this;
+    for(var i=0; i<arguments.length; i++)
+        for(var key in arguments[i])
+            if(arguments[i].hasOwnProperty(key))
+                dst[key] = arguments[i][key];
+    return dst;
 }
