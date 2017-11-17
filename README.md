@@ -9,4 +9,4 @@ A JavaScript implementation of [Conway's Game of Life](https://en.wikipedia.org/
 
 
 
-### Demo: [http://titosust.github.io/game-of-life](http://titosust.github.io/game-of-life/index.html)
+### Demo: [http://titosust.github.io/game-of-life](http://tito433.github.io/game-of-life/index.html)
